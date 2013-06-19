@@ -43,11 +43,26 @@
             if (rangeCache[id]) delete rangeCache[id];
         });
 
-        this.pointer = $("<div class='" + this.pointerClass + "'></div>").get(); //round pointer we drag
-        this.range = $("<div class='" + this.rangeClass + "'></div>").get(); //range that we drag on
-        this.rangeFill = $("<div class='" + this.rangeFillClass + "'></div>").get(); //range fill to the left
-        this.bubble = $("<div class='" + this.bubbleClass + "'></div>").get(); //bubble above showing the value
+		for (var j in opts) {
+            this[j] = opts[j];
+        }
+
+		if (!this.pointer) {
+			this.pointer = $("<div class='" + this.pointerClass + "'></div>").get(); //round pointer we drag
+		}
+		if (!this.range) {
+	        this.range = $("<div class='" + this.rangeClass + "'></div>").get(); //range that we drag on
+		}
+		if (!this.rangeFill) {
+			this.rangeFill = $("<div class='" + this.rangeFillClass + "'></div>").get(); //range fill to the left
+		}
+		if (!this.bubble) {
+	        this.bubble = $("<div class='" + this.bubbleClass + "'></div>").get(); //bubble above showing the value
+		}
         this.pointer.style.webkitTransitionDuration = "0ms";
+		this.pointer.addEventListener('mousedown', function() {
+			console.log('mousedown');
+		}, true);
         this.elem.appendChild(this.pointer);
         this.elem.appendChild(this.range);
         this.elem.appendChild(this.rangeFill);
@@ -55,14 +70,16 @@
         if (this.elem.style.position === "static")
             this.elem.style.position = "relative";
 
-        for (var j in opts) {
-            this[j] = opts[j];
-        }
+        
 
         if (opts['value'])
             this.val(opts['value']);
 
         this.elem.addEventListener("touchstart", this);
+        //this.pointer.addEventListener("touchstart", this);
+
+		this.elem._afRange = true;
+
         return this;
     };
 
@@ -77,6 +94,12 @@
         bubbleClass: "rangeBubble",
         stepFunc: function() {},
         handleEvent: function(evt) {
+			if (evt.target != this.pointer && this.pointer != this.elem._afLastDragged) {
+				return;
+			}
+			if (evt.target == this.pointer) {
+				this.elem._afLastDragged = this.pointer;
+			}
             switch (evt.type) {
                 case "touchstart":
                     this.onTouchStart(evt);
@@ -93,6 +116,8 @@
             var that = this;
             this.elem.addEventListener("touchmove", this);
             this.elem.addEventListener("touchend", this);
+//            this.pointer.addEventListener("touchmove", this);
+//            this.pointer.addEventListener("touchend", this);
 
         },
         onTouchMove: function(event) {
@@ -149,4 +174,91 @@
             this.stepFunc(val);
         }
     };
+
+	var interval = function() {
+		interval.super.apply(this, arguments);
+		return this;
+	}
+
+	!function() {
+		var f = function() {};
+		f.prototype = range.prototype;
+		var F = new f();
+		interval.prototype = F;
+		interval.prototype.constructor = interval;
+		interval.super = range;
+	}();
+
+	interval.prototype.val = function(val, position) {
+		console.log('interval.val(' + this.name + ')', val);
+		if (val === undefined)
+			return this.value;
+
+		val = Math.min(val, this.max);
+		val = Math.max(val, this.min);
+		if (position === undefined) {
+			var
+			pointerW = this.pointer.offsetWidth,
+				rangeW = this.range.offsetWidth,
+				range = this.max - this.min,
+				width = rangeW - pointerW,
+				position = Math.round((val - this.min) * width / range, 10);
+			$(this.bubble).cssTranslate(position + "px,0");
+			$(this.pointer).cssTranslate(position + "px,0");
+
+
+		}
+		//this.rangeFill.style.width = position + "px";
+
+
+		this.bubble.innerHTML = val;
+		this.value = val;
+		this.stepFunc(val);
+	};
+
+
+    $.fn.interval = function(opts) {
+        if (this.length === 0) return;
+        if (opts === undefined)
+            return rangeCache[this[0].rangeID];
+        for (var i = 0; i < this.length; i++) {
+            //Assign a jqid for the cache in case they don't have an id on the elements
+            if (!this[i].rangeID)
+                this[i].rangeID = $.uuid();
+            //rangeCache[this[i].rangeID] = new range(this[i], opts);
+			var first = new interval(this[i], {
+					name: 'first',
+					value: 10
+				}),
+				second = new interval(this[i], {
+					name: 'second',
+					range: first.range,
+					rangeFill: first.rangeFill,
+					value: 20
+				});
+
+                var
+                pointerW = first.pointer.offsetWidth,
+                    rangeW = first.range.offsetWidth,
+                    range = first.max - first.min,
+                    width = rangeW - pointerW,
+                    position_left = Math.round((10 - first.min) * width / range, 10);
+
+				console.log(pointerW, rangeW, range, width, position_left);
+
+
+                var
+                pointerW = second.pointer.offsetWidth,
+                    rangeW = second.range.offsetWidth,
+                    range = second.max - second.min,
+                    width = rangeW - pointerW,
+                    position_right = Math.round((20 - second.min) * width / range, 10);
+				console.log(pointerW, rangeW, range, width, position_right);
+
+				first.rangeFill.style.left=position_left + 'px';
+				first.rangeFill.style.width=(position_right - position_left) + 'px';
+
+        }
+    };
+
 })(jq);
