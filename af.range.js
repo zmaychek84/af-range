@@ -60,9 +60,6 @@
 	        this.bubble = $("<div class='" + this.bubbleClass + "'></div>").get(); //bubble above showing the value
 		}
         this.pointer.style.webkitTransitionDuration = "0ms";
-		this.pointer.addEventListener('mousedown', function() {
-			console.log('mousedown');
-		}, true);
         this.elem.appendChild(this.pointer);
         this.elem.appendChild(this.range);
         this.elem.appendChild(this.rangeFill);
@@ -116,13 +113,10 @@
             var that = this;
             this.elem.addEventListener("touchmove", this);
             this.elem.addEventListener("touchend", this);
-//            this.pointer.addEventListener("touchmove", this);
-//            this.pointer.addEventListener("touchend", this);
 
         },
         onTouchMove: function(event) {
             event.preventDefault();
-
 
             var position = event.touches[0].pageX,
                 element,
@@ -156,12 +150,7 @@
             val = Math.min(val, this.max);
             val = Math.max(val, this.min);
             if (position === undefined) {
-                var
-                pointerW = this.pointer.offsetWidth,
-                    rangeW = this.range.offsetWidth,
-                    range = this.max - this.min,
-                    width = rangeW - pointerW,
-                    position = Math.round((val - this.min) * width / range, 10);
+				var position = this.getPosition(val);
                 $(this.bubble).cssTranslate(position + "px,0");
                 $(this.pointer).cssTranslate(position + "px,0");
 
@@ -172,11 +161,23 @@
             this.bubble.innerHTML = val;
             this.value = val;
             this.stepFunc(val);
-        }
+        },
+
+		getPosition: function(val) {
+			var
+				value = val || this.value,
+				pointerW = this.pointer.offsetWidth,
+				rangeW = this.range.offsetWidth,
+				range = this.max - this.min,
+				width = rangeW - pointerW,
+				position = Math.round((value - this.min) * width / range, 10);
+
+			return position;
+		}
     };
 
-	var interval = function() {
-		interval.super.apply(this, arguments);
+	var intervalSelector = function() {
+		intervalSelector.super.apply(this, arguments);
 		return this;
 	}
 
@@ -184,28 +185,23 @@
 		var f = function() {};
 		f.prototype = range.prototype;
 		var F = new f();
-		interval.prototype = F;
-		interval.prototype.constructor = interval;
-		interval.super = range;
+		intervalSelector.prototype = F;
+		intervalSelector.prototype.constructor = intervalSelector;
+		intervalSelector.super = range;
 	}();
 
-	interval.prototype.val = function(val, position) {
-		console.log('interval.val(' + this.name + ')', val);
+	intervalSelector.prototype.val = function(val, position) {
+		console.log('herE!',val,position);
 		if (val === undefined)
 			return this.value;
 
 		val = Math.min(val, this.max);
 		val = Math.max(val, this.min);
 		if (position === undefined) {
-			var
-			pointerW = this.pointer.offsetWidth,
-				rangeW = this.range.offsetWidth,
-				range = this.max - this.min,
-				width = rangeW - pointerW,
-				position = Math.round((val - this.min) * width / range, 10);
+			var position = this.getPosition(val);
+
 			$(this.bubble).cssTranslate(position + "px,0");
 			$(this.pointer).cssTranslate(position + "px,0");
-
 
 		}
 		//this.rangeFill.style.width = position + "px";
@@ -213,9 +209,72 @@
 
 		this.bubble.innerHTML = val;
 		this.value = val;
-		this.stepFunc(val);
+
+		//this.stepFunc(val);
+		this.stepFunc(position, val);
 	};
 
+	var interval = function(el, opts) {
+		var that = this;
+
+		var stepFunc = function(pos, val) {
+			if (!that.first || !that.second) { 
+				return;
+			}
+
+			var firstPos = that.first.getPosition(),
+				secondPos = that.second.getPosition(),
+				isFirstLeft = firstPos < secondPos,
+				leftPos = isFirstLeft ? firstPos : secondPos,
+				rightPos = isFirstLeft ? secondPos : firstPos;
+			
+			that.first.rangeFill.style.left = leftPos + 'px';
+			that.first.rangeFill.style.width = (rightPos - leftPos) + 'px';
+
+			that.stepFunc(that.val());
+		};
+
+		this.first = new intervalSelector(el, {
+			name: 'first',
+			value: 10,
+			stepFunc: function(pos, val) {
+				stepFunc(pos, val);
+			}
+		});
+
+		this.second = new intervalSelector(el, {
+			name: 'second',
+			value: 20,
+			range: this.first.range,
+			rangeFill: this.first.rangeFill,
+			stepFunc: function(pos, val) {
+				stepFunc(pos, val);
+			}
+		});
+
+		// set rangeFill position
+		var firstPos = this.first.getPosition(),
+			secondPos = this.second.getPosition();
+
+		this.first.rangeFill.style.left = firstPos + 'px';
+		this.first.rangeFill.style.width = (secondPos - firstPos) + 'px';
+	};
+
+	interval.prototype = { 
+		stepFunc: function() { },
+
+		val: function(val) {
+			if (!(val instanceof Array)) {
+				return {
+					left: Math.min(this.first.val(), this.second.val()),
+					right: Math.max(this.first.val(), this.second.val())
+				};
+			} else {
+				// TODO here
+				throw new Error('not implemented yet');
+			}
+		}
+	};
 
     $.fn.interval = function(opts) {
         if (this.length === 0) return;
@@ -226,39 +285,11 @@
             if (!this[i].rangeID)
                 this[i].rangeID = $.uuid();
             //rangeCache[this[i].rangeID] = new range(this[i], opts);
-			var first = new interval(this[i], {
-					name: 'first',
-					value: 10
-				}),
-				second = new interval(this[i], {
-					name: 'second',
-					range: first.range,
-					rangeFill: first.rangeFill,
-					value: 20
-				});
-
-                var
-                pointerW = first.pointer.offsetWidth,
-                    rangeW = first.range.offsetWidth,
-                    range = first.max - first.min,
-                    width = rangeW - pointerW,
-                    position_left = Math.round((10 - first.min) * width / range, 10);
-
-				console.log(pointerW, rangeW, range, width, position_left);
 
 
-                var
-                pointerW = second.pointer.offsetWidth,
-                    rangeW = second.range.offsetWidth,
-                    range = second.max - second.min,
-                    width = rangeW - pointerW,
-                    position_right = Math.round((20 - second.min) * width / range, 10);
-				console.log(pointerW, rangeW, range, width, position_right);
+			rangeCache[this[i].rangeID] = new interval(this[i], opts);
 
-				first.rangeFill.style.left=position_left + 'px';
-				first.rangeFill.style.width=(position_right - position_left) + 'px';
-
-        }
-    };
+		}
+	};
 
 })(jq);
