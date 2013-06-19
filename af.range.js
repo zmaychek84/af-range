@@ -12,7 +12,7 @@
    but adapted for App Framework
    ```
     $("#slider1").range({min:1,max:20,val:10,stepFunc(val){}});
-	$("#slider2").interval({min:1, max: 20, val: {
+	$("#slider2").interval({min:1, max: 20, value: {
 		left: 5,
 		right: 15
 	}, stepFunc(val) {} });
@@ -54,24 +54,24 @@
 
 		if (!this.pointer) {
 			this.pointer = $("<div class='" + this.pointerClass + "'></div>").get(); //round pointer we drag
+			this.elem.appendChild(this.pointer);
 		}
 		if (!this.range) {
 	        this.range = $("<div class='" + this.rangeClass + "'></div>").get(); //range that we drag on
+			this.elem.appendChild(this.range);
 		}
 		if (!this.rangeFill) {
 			this.rangeFill = $("<div class='" + this.rangeFillClass + "'></div>").get(); //range fill to the left
+			this.elem.appendChild(this.rangeFill);
 		}
 		if (!this.bubble) {
 	        this.bubble = $("<div class='" + this.bubbleClass + "'></div>").get(); //bubble above showing the value
+			this.elem.appendChild(this.bubble);
 		}
+
         this.pointer.style.webkitTransitionDuration = "0ms";
-        this.elem.appendChild(this.pointer);
-        this.elem.appendChild(this.range);
-        this.elem.appendChild(this.rangeFill);
-        this.elem.appendChild(this.bubble);
         if (this.elem.style.position === "static")
             this.elem.style.position = "relative";
-
         
 
         if (opts['value'])
