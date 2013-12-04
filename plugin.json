@@ -1,0 +1,13 @@
+{
+    "name": "ranoge",
+    "title": "Range",
+    "version": "2.1",
+    "author": "Intel"
+    "license": "MIT License",
+    "description": "A range polyfill for App Framework apps.",
+    "categories": [
+
+    ],
+    "homepage": "https://github.com/01org/af-range",
+    "githubLink": "https://github.com/01org/af-range"
+}
