@@ -1,0 +1,138 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-b3e09912-657b-41e3-9555-c8625144aa02",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Evaluate setTimeout for untrusted data\" vulnerability in JavaScript arises when the `setTimeout` function is used with untrusted data, potentially allowing an attacker to execute arbitrary code. This vulnerability is particularly dangerous because it can lead to cross-site scripting (XSS) attacks if the untrusted data is manipulated to include malicious scripts.\n\n### General Mitigation Advice\n\n1. **Avoid Using `setTimeout` with Strings**: Always use a function reference instead of a string to avoid the execution of arbitrary code.\n2. **Sanitize Input**: Ensure that any data used in `setTimeout` is properly sanitized and validated.\n3. **Use Security Libraries**: Consider using libraries that help in sanitizing and escaping data.\n4. **Content Security Policy (CSP)**: Implement CSP headers to mitigate the risk of XSS attacks.\n\n### Source Code Fix Recommendation\n\nIn the provided code snippet, ensure that `setTimeout` is not used with untrusted data. Instead, use a function reference:\n\n```javascript\nsetTimeout(function() {\n    xhr.onreadystatechange = empty;\n    xhr.abort();\n}, 1000); // Specify a delay as needed\n```\n\n### Library Dependencies\n\nThe provided code snippet does not require any external library dependencies to execute properly. It uses native JavaScript features.\n\n### OWASP Resources\n\n- [OWASP Cross Site Scripting (XSS)](https://owasp.org/www-community/attacks/xss/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')](https://cwe.mitre.org/data/definitions/95.html)\n- [CWE-116: Improper Encoding or Escaping of Output](https://cwe.mitre.org/data/definitions/116.html)"
+              },
+              "properties": {
+                "tags": [
+                  "DS172411"
+                ]
+              }
+            },
+            {
+              "id": "glog-3315ee71-9123-4388-b055-355d324f694c",
+              "help": {
+                "text": "",
+                "markdown": "### Description\n\nThe \"Evaluate setTimeout Usage with Untrusted Data\" vulnerability in JavaScript arises when the `setTimeout` function is used with untrusted data, potentially leading to code injection attacks. This vulnerability occurs because `setTimeout` can execute a string of JavaScript code, which, if constructed from untrusted input, can be exploited by attackers to execute arbitrary code.\n\n### General Mitigation Advice\n\n1. **Avoid Using Strings in `setTimeout`:** Always use function references instead of strings when calling `setTimeout`.\n2. **Validate and Sanitize Input:** Ensure that any data used in conjunction with `setTimeout` is properly validated and sanitized.\n3. **Use Strict Content Security Policy (CSP):** Implement a strict CSP to prevent the execution of malicious scripts.\n4. **Use Security Libraries:** Consider using libraries that help in sanitizing and validating inputs.\n\n### Source Code Fix Recommendation\n\n#### Vulnerable Code\n\n```javascript\n// Vulnerable: Using untrusted data in setTimeout\nsetTimeout(function() {\n    eval(untrustedInput);\n}, 1000);\n```\n\n#### Fixed Code\n\n```javascript\n// Secure: Using a function reference instead of a string\nsetTimeout(function() {\n    // Safely handle the untrusted input\n    console.log('Executing safe code');\n}, 1000);\n```\n\n### Library Dependencies\n\nThe code example provided does not require any external library dependencies to execute properly.\n\n### Relevant OWASP Resources\n\n- [OWASP Top Ten](https://owasp.org/www-project-top-ten/)\n\n### Common Weakness Enumeration (CWE)\n\n- [CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')](https://cwe.mitre.org/data/definitions/95.html)\n\nThese resources and links are valid and accessible to anonymous users as of the latest check."
+              },
+              "properties": {
+                "tags": [
+                  "DS172411"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-b3e09912-657b-41e3-9555-c8625144aa02",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Review setTimeout for untrusted data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "appframework.js"
+                },
+                "region": {
+                  "startLine": 1724,
+                  "startColumn": 35,
+                  "endLine": 1726,
+                  "endColumn": 35,
+                  "charOffset": 67591,
+                  "charLength": 115,
+                  "snippet": {
+                    "text": "setTimeout(function() {\n                        xhr.onreadystatechange = empty;\n                        xhr.abort()",
+                    "rendered": {
+                      "text": "setTimeout(function() {\n                        xhr.onreadystatechange = empty;\n                        xhr.abort()",
+                      "markdown": "`setTimeout(function() {\n                        xhr.onreadystatechange = empty;\n                        xhr.abort()`"
+                    }
+                  },
+                  "sourceLanguage": "javascript"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "ManualReview",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "JavaScript.DangerousFunctionCall",
+              "TypeScript.DangerousFunctionCall"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-3315ee71-9123-4388-b055-355d324f694c",
+          "kind": "fail",
+          "level": "note",
+          "message": {
+            "text": "Review setTimeout for untrusted data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "appframework.js"
+                },
+                "region": {
+                  "startLine": 1572,
+                  "startColumn": 31,
+                  "endLine": 1572,
+                  "endColumn": 52,
+                  "charOffset": 60804,
+                  "charLength": 21,
+                  "snippet": {
+                    "text": "setTimeout(function()",
+                    "rendered": {
+                      "text": "setTimeout(function()",
+                      "markdown": "`setTimeout(function()`"
+                    }
+                  },
+                  "sourceLanguage": "javascript"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "ManualReview",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "JavaScript.DangerousFunctionCall",
+              "TypeScript.DangerousFunctionCall"
+            ]
+          }
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
